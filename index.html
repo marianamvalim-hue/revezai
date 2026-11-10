@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#23483b">
+<title>Revez.Aí — Dividir tarefas. Multiplicar o tempo.</title>
+<style>
+:root{--green:#23483b;--sage:#dce8df;--cream:#f7f5ee;--ink:#26352e;--muted:#718078;--white:#fff;--line:#e6e9e3;--gold:#d9b66f}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:Inter,Arial,sans-serif}
+header{background:var(--green);color:white;padding:22px max(20px,calc((100% - 1050px)/2));}
+.brand{font-size:26px;font-weight:800;letter-spacing:-1px}.brand span{color:#c9ddcf}header p{margin:5px 0 0;color:#dce8df;font-size:13px}
+main{max-width:1050px;margin:26px auto;padding:0 18px 50px}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+nav button,.btn{border:0;border-radius:12px;padding:11px 16px;background:#e8eee8;color:var(--green);font-weight:700;cursor:pointer}
+nav button.active,.btn.primary{background:var(--green);color:white}
+h1{font-size:25px;margin:0 0 6px}h2{font-size:17px;margin:0 0 14px}.sub{color:var(--muted);margin:0 0 20px;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+.card{background:white;border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 4px 18px #20382b08}
+.metric{font-size:28px;font-weight:800;color:var(--green)}.metric-label{font-size:12px;color:var(--muted);margin-top:3px}
+.progress{height:9px;background:#edf1ed;border-radius:20px;overflow:hidden;margin:12px 0}.progress div{height:100%;background:#6f9a7e;width:0%;transition:.2s}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}.task{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}.task:last-child{border:0}
+.task input{width:18px;height:18px;accent-color:var(--green)}.task-title{font-weight:700}.task small{display:block;color:var(--muted);margin-top:4px}.done .task-title{text-decoration:line-through;color:#89958d}
+form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:15px}
+input,select{width:100%;padding:12px;border:1px solid #dfe5df;border-radius:11px;background:white;color:var(--ink);font:inherit}
+form button{grid-column:1/-1}
+.person{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.pill{background:var(--sage);color:var(--green);padding:5px 9px;border-radius:20px;font-size:12px;font-weight:700}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.filters button{border:1px solid var(--line);background:white;border-radius:20px;padding:7px 12px;color:var(--muted);cursor:pointer}.filters button.active{background:var(--sage);color:var(--green);border-color:var(--sage)}
+.page{display:none}.page.active{display:block}.empty{padding:24px;text-align:center;color:var(--muted)}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
+@media(max-width:650px){.grid{grid-template-columns:1fr 1fr}form{grid-template-columns:1fr}form button{grid-column:auto}main{margin-top:18px}.metric{font-size:24px}}
+</style>
+</head>
+<body>
+<header><div class="brand">revez<span>.aí</span></div><p>Dividir tarefas. Multiplicar o tempo.</p></header>
+<main>
+<nav>
+<button class="active" data-page="inicio">Início</button>
+<button data-page="tarefas">Tarefas</button>
+<button data-page="moradores">Moradores</button>
+<button data-page="pontos">Pontos</button>
+</nav>
+
+<section class="page active" id="inicio">
+<h1 id="homeTitle">Nossa casa, em equilíbrio.</h1>
+<p class="sub">Uma rotina mais leve começa quando todo mundo participa.</p>
+<div class="grid">
+<div class="card"><div class="metric" id="totalTasks">0</div><div class="metric-label">Tarefas cadastradas</div></div>
+<div class="card"><div class="metric" id="doneTasks">0</div><div class="metric-label">Tarefas concluídas</div></div>
+<div class="card"><div class="metric" id="percent">0%</div><div class="metric-label">Progresso da casa</div></div>
+</div>
+<div class="card"><div class="row"><h2>Progresso da semana</h2><span class="pill" id="progressLabel">Vamos começar!</span></div><div class="progress"><div id="progressBar"></div></div><p class="sub" style="margin:0">Marque as tarefas concluídas para acompanhar o progresso de todos.</p></div>
+<div class="card" style="margin-top:14px"><h2>Próximas tarefas</h2><div id="homeTasks" class="empty">Nenhuma tarefa por enquanto. Cadastre a primeira!</div></div>
+</section>
+
+<section class="page" id="tarefas">
+<h1>Tarefas da casa</h1><p class="sub">Organize o que precisa ser feito e combine quem fica responsável.</p>
+<div class="card">
+<h2>Adicionar tarefa</h2>
+<form id="taskForm">
+<input id="taskName" placeholder="Ex.: Lavar a louça" required maxlength="70">
+<select id="taskPerson" required><option value="">Escolha o responsável</option></select>
+<select id="taskCategory"><option>Limpeza</option><option>Cozinha</option><option>Organização</option><option>Compras</option><option>Outros</option></select>
+<input id="taskDate" type="date" aria-label="Prazo">
+<button class="btn primary" type="submit">+ Adicionar tarefa</button>
+</form>
+<div class="filters">
+<button class="active" data-filter="todas">Todas</button><button data-filter="pendentes">Pendentes</button><button data-filter="concluidas">Concluídas</button>
+</div>
+<div id="taskList"></div>
+</div>
+</section>
+
+<section class="page" id="moradores">
+<h1>Quem mora aqui?</h1><p class="sub">Cadastre as pessoas que vão dividir as responsabilidades.</p>
+<div class="card">
+<h2>Adicionar morador</h2>
+<form id="personForm"><input id="personName" placeholder="Nome da pessoa" required maxlength="35"><button class="btn primary" type="submit">+ Adicionar morador</button></form>
+<div id="peopleList"></div>
+</div>
+</section>
+
+<section class="page" id="pontos">
+<h1>Conquistas da equipe</h1><p class="sub">Cada tarefa concluída vale 10 pontos. Todo mundo ganha com a colaboração!</p>
+<div class="card"><div id="ranking"></div></div>
+</section>
+<footer>Revez.Aí · Organização compartilhada, convivência melhor.</footer>
+</main>
+<script>
+const KEY='revezai_v1';
+let data=JSON.parse(localStorage.getItem(KEY)||'null')||{people:[],tasks:[]};
+let filter='todas';
+const $=id=>document.getElementById(id);
+function save(){localStorage.setItem(KEY,JSON.stringify(data));render()}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function go(page){document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===page));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===page))}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
+document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{filter=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('active',x===b));renderTasks()}));
+$('personForm').addEventListener('submit',e=>{e.preventDefault();let name=$('personName').value.trim();if(!name)return;if(data.people.some(p=>p.name.toLowerCase()===name.toLowerCase())){alert('Esse morador já está cadastrado.');return}data.people.push({id:crypto.randomUUID(),name});$('personName').value='';save()});
+$('taskForm').addEventListener('submit',e=>{e.preventDefault();if(!data.people.length){alert('Cadastre pelo menos um morador primeiro.');go('moradores');return}data.tasks.unshift({id:crypto.randomUUID(),name:$('taskName').value.trim(),person:$('taskPerson').value,category:$('taskCategory').value,date:$('taskDate').value,done:false});$('taskName').value='';$('taskDate').value='';save()});
+function toggleTask(id){let t=data.tasks.find(x=>x.id===id);if(t)t.done=!t.done;save()}
+function deleteTask(id){if(confirm('Excluir esta tarefa?')){data.tasks=data.tasks.filter(x=>x.id!==id);save()}}
+function deletePerson(id){let p=data.people.find(x=>x.id===id);if(data.tasks.some(t=>t.person===p?.name)){alert('Este morador tem tarefas vinculadas. Altere ou exclua essas tarefas antes de removê-lo.');return}if(confirm('Remover este morador?')){data.people=data.people.filter(x=>x.id!==id);save()}}
+function renderTasks(){let tasks=data.tasks.filter(t=>filter==='todas'||(filter==='pendentes'&&!t.done)||(filter==='concluidas'&&t.done));$('taskList').innerHTML=tasks.length?tasks.map(t=>`<div class="task ${t.done?'done':''}"><input type="checkbox" ${t.done?'checked':''} onchange="toggleTask('${t.id}')" aria-label="Concluir tarefa"><div style="flex:1"><div class="task-title">${esc(t.name)}</div><small>${esc(t.person)} · ${esc(t.category)}${t.date?' · Prazo: '+new Date(t.date+'T12:00:00').toLocaleDateString('pt-BR'):''}</small></div><button class="btn" onclick="deleteTask('${t.id}')" aria-label="Excluir">Excluir</button></div>`).join(''):'<div class="empty">Nenhuma tarefa nesta lista.</div>'}
+function render(){let done=data.tasks.filter(t=>t.done).length,total=data.tasks.length,pct=total?Math.round(done/total*100):0;$('totalTasks').textContent=total;$('doneTasks').textContent=done;$('percent').textContent=pct+'%';$('progressBar').style.width=pct+'%';$('progressLabel').textContent=total?(pct===100?'Tudo concluído!':'Em andamento'):'Vamos começar!';$('homeTitle').textContent=data.people.length?'A casa de vocês, em equilíbrio.':'Nossa casa, em equilíbrio.';$('taskPerson').innerHTML='<option value="">Escolha o responsável</option>'+data.people.map(p=>`<option>${esc(p.name)}</option>`).join('');let upcoming=data.tasks.filter(t=>!t.done).slice(0,4);$('homeTasks').innerHTML=upcoming.length?upcoming.map(t=>`<div class="person"><span><b>${esc(t.name)}</b><small style="display:block;color:var(--muted)">${esc(t.person)}</small></span><span class="pill">Pendente</span></div>`).join(''):'<div class="empty">Nenhuma tarefa pendente. Cadastre a primeira!</div>';$('peopleList').innerHTML=data.people.length?data.people.map(p=>`<div class="person"><b>${esc(p.name)}</b><button class="btn" onclick="deletePerson('${p.id}')">Remover</button></div>`).join(''):'<div class="empty">Nenhum morador cadastrado ainda.</div>';$('ranking').innerHTML=data.people.length?data.people.map(p=>{let count=data.tasks.filter(t=>t.person===p.name&&t.done).length;return `<div class="person"><span><b>${esc(p.name)}</b><small style="display:block;color:var(--muted)">${count} tarefa(s) concluída(s)</small></span><span class="pill">${count*10} pontos</span></div>`}).sort((a,b)=>b.localeCompare(a)) .join(''):'<div class="empty">Cadastre os moradores para ver a pontuação.</div>';renderTasks()}
+render();
+</script>
+</body>
+</html>
